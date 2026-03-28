@@ -2,6 +2,8 @@
 
 ---
 
+![NeoFraudJ Dynamic Graph](images/dynamic_graph.png)
+
 Real-time fraud detection with a live graph dashboard. Transactions flow through a REST API, are persisted as a property graph in Neo4j, and are visualised and analysed in a React UI powered by WebSockets.
 
 ---
@@ -36,7 +38,7 @@ The public-facing entry point. It accepts `POST /v1/transactions`, validates the
 
 ### processor-service
 
-A background worker that runs a Redis consumer group (`XREADGROUP`). It reads batches of raw transaction messages, resolves the full entity graph (User → Account → Card → Transaction → Merchant → Device → IPAddress), and writes everything to Neo4j using `MERGE` statements so nodes are never duplicated. It also handles dead-letter recovery via `XAUTOCLAIM`.
+A background worker that runs a Redis consumer group (`XREADGROUP`). It reads batches of raw transaction messages, resolves the full entity graph (User -> Account -> Card -> Transaction -> Merchant -> Device -> IPAddress), and writes everything to Neo4j using `MERGE` statements so nodes are never duplicated. It also handles dead-letter recovery via `XAUTOCLAIM`.
 
 ### detection-service
 
@@ -50,7 +52,7 @@ Serves two roles:
 A React + TypeScript single-page app served by Vite. It has two graph modes:
 
 - **Dynamic** — connects via WebSocket and renders new transactions in real time using a force-directed simulation (`react-force-graph-2d`). Fraud nodes glow red. Clicking any node highlights its full directed chain and dims the rest.
-- **Static** — fetches a time-bounded snapshot via REST and renders a deterministic hierarchical layout computed by `dagre`. Transactions from the same card are collapsed into a single cluster diamond. Supports Vertical (top → bottom) and Horizontal (left → right) orientations.
+- **Static** — fetches a time-bounded snapshot via REST and renders a deterministic hierarchical layout computed by `dagre`. Transactions from the same card are collapsed into a single cluster diamond. Supports Vertical (top -> bottom) and Horizontal (left -> right) orientations.
 
 ### Redis
 
@@ -91,19 +93,21 @@ The core of the system. The data model is a property graph where every entity (u
 
 ```mermaid
 graph LR
-    classDef user fill:#3b82f6,stroke:#2563eb,stroke-width:2px,color:#fff;
-    classDef finance fill:#10b981,stroke:#059669,stroke-width:2px,color:#fff;
-    classDef event fill:#f59e0b,stroke:#d97706,stroke-width:2px,color:#fff;
-    classDef target fill:#8b5cf6,stroke:#7c3aed,stroke-width:2px,color:#fff;
-    classDef tech fill:#4b5563,stroke:#374151,stroke-width:2px,color:#fff;
+    subgraph Identity [Identity Layer]
+        U([User]):::user
+        A[(Account)]:::finance
+        C([Card]):::finance
+    end
 
-    U([👤 User]):::user
-    A[(🏦 Account)]:::finance
-    C([💳 Card]):::finance
-    T{⚡ Transaction}:::event
-    M([🏪 Merchant]):::target
-    D[📱 Device]:::tech
-    IP[🌐 IP Address]:::tech
+    subgraph Activity [Transaction Layer]
+        T{Transaction}:::event
+    end
+
+    subgraph Metadata [Contextual Metadata]
+        M([Merchant]):::target
+        D[Device]:::tech
+        IP[IP Address]:::tech
+    end
 
     U -- "OWNS_ACCOUNT" --> A
     A -- "HAS_CARD" --> C
@@ -111,6 +115,12 @@ graph LR
     T -- "PAID_TO" --> M
     T -- "FROM_DEVICE" --> D
     T -- "FROM_IP" --> IP
+
+    classDef user fill:#2563eb,stroke:#1e3a8a,stroke-width:2px,color:#fff;
+    classDef finance fill:#10b981,stroke:#065f46,stroke-width:2px,color:#fff;
+    classDef event fill:#f59e0b,stroke:#9a3412,stroke-width:2px,color:#fff;
+    classDef target fill:#8b5cf6,stroke:#5b21b6,stroke-width:2px,color:#fff;
+    classDef tech fill:#64748b,stroke:#334155,stroke-width:2px,color:#fff;
 ```
 
 ---
@@ -124,14 +134,14 @@ Five graph-based patterns are evaluated on every ingested transaction:
 | **Velocity** | Card performs > 5 transactions within 60 s |
 | **Device sharing** | Device used by > 3 distinct cards within 24 h |
 | **IP sharing** | IP used by > 3 distinct accounts within 1 h |
-| **Circular transfer** | Same account pays same merchant > 3× within 24 h |
+| **Circular transfer** | Same account pays same merchant > 3x within 24 h |
 | **Geographic anomaly** | Same card used from two different IP countries within 10 min |
 
 When velocity fraud is detected the transaction and its card are permanently marked `isFraud = true` in Neo4j so the static graph renders them in red.
 
 ### Risk score
 
-`GET /v1/transactions/{id}/risk-score` returns a composite score (0–100):
+`GET /v1/transactions/{id}/risk-score` returns a composite score (0-100):
 
 | Signal | Penalty |
 |---|---|
@@ -139,7 +149,7 @@ When velocity fraud is detected the transaction and its card are permanently mar
 | Device sharing (> 3 cards / 24 h) | +30 |
 | IP sharing (> 3 accounts / 1 h) | +20 |
 
-Risk level: `HIGH` (≥ 60) · `MEDIUM` (≥ 30) · `LOW` (< 30)
+Risk level: HIGH (>= 60) | MEDIUM (>= 30) | LOW (< 30)
 
 ---
 
@@ -149,18 +159,24 @@ Open **http://localhost:5173** after starting the stack.
 
 ### Dynamic graph
 
+![Dynamic Graph Live Feed](images/dynamic_graph.png)
+
 Connects via WebSocket to `detection-service`. New transactions appear in real time as they are ingested. The server sends a snapshot of the last 100 transactions on connect. Fraud nodes glow red.
 
 - Optional **From** filter: loads history from that point via REST then continues streaming
 - Click a node to open the side panel; clicking a **Transaction** node fetches its risk score
 - Clicking any node highlights its full chain (upstream to User, downstream to Merchant) and dims everything else
 
+![Fraud Explorer Side Panel](images/fraud_explorer.png)
+
 ### Static graph
 
-Loads a time-bounded snapshot via `GET /v1/graph?start=…&end=…`. Transaction nodes belonging to the same card are collapsed into a single cluster diamond.
+![Static Hierarchical Graph](images/static_graph.png)
 
-- **Vertical** layout: hierarchy flows top → bottom (User at top, Merchant at bottom), siblings spread left → right
-- **Horizontal** layout: hierarchy flows left → right, siblings spread top → bottom
+Loads a time-bounded snapshot via `GET /v1/graph?start=...&end=...`. Transaction nodes belonging to the same card are collapsed into a single cluster diamond.
+
+- **Vertical** layout: hierarchy flows top -> bottom (User at top, Merchant at bottom), siblings spread left -> right
+- **Horizontal** layout: hierarchy flows left -> right, siblings spread top -> bottom
 - Layout is computed with dagre (deterministic, no physics)
 
 ---
