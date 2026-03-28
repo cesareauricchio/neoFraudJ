@@ -1,0 +1,43 @@
+# ── Secrets ────────────────────────────────────────────────────────────────────
+.env
+
+# ── Claude Code ────────────────────────────────────────────────────────────────
+.claude/
+
+# ── Python ─────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+.venv/
+venv/
+env/
+
+# ── Python tooling ─────────────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+
+# ── Node / UI ──────────────────────────────────────────────────────────────────
+ui/node_modules/
+ui/dist/
+ui/.vite/
+
+# ── OS ─────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── IDE ────────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+
+# ── Docker volume data (if accidentally materialised locally) ──────────────────
+neo4j_data/
+neo4j_logs/
+neo4j_plugins/
+redis_data/
