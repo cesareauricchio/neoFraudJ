@@ -97,13 +97,13 @@ graph LR
     classDef target fill:#8b5cf6,stroke:#7c3aed,stroke-width:2px,color:#fff;
     classDef tech fill:#4b5563,stroke:#374151,stroke-width:2px,color:#fff;
 
-    U([👤 User]):::user
-    A[(🏦 Account)]:::finance
-    C([💳 Card]):::finance
-    T{⚡ Transaction}:::event
-    M([🏪 Merchant]):::target
-    D[📱 Device]:::tech
-    IP[🌐 IP Address]:::tech
+    U([User]):::user
+    A[(Account)]:::finance
+    C([Card]):::finance
+    T{Transaction}:::event
+    M([Merchant]):::target
+    D[Device]:::tech
+    IP[IP Address]:::tech
 
     U -- "OWNS_ACCOUNT" --> A
     A -- "HAS_CARD" --> C
