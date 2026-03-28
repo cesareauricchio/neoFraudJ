@@ -92,21 +92,22 @@ The core of the system. The data model is a property graph where every entity (u
 ### Schema diagram
 
 ```mermaid
+%%{init: {"theme": "base", "themeVariables": {"background": "#ffffff"}, "flowchart": {"nodeSpacing": 100, "rankSpacing": 180}}}%%
 graph LR
     subgraph Identity [Identity Layer]
-        U([User]):::user
-        A[(Account)]:::finance
-        C([Card]):::finance
+        U([User]):::userNode
+        A[(Account)]:::accountNode
+        C([Card]):::cardNode
     end
 
     subgraph Activity [Transaction Layer]
-        T{Transaction}:::event
+        T{Transaction}:::transactionNode
     end
 
     subgraph Metadata [Contextual Metadata]
-        M([Merchant]):::target
-        D[Device]:::tech
-        IP[IP Address]:::tech
+        M([Merchant]):::merchantNode
+        D[Device]:::deviceNode
+        IP[IP Address]:::ipNode
     end
 
     U -- "OWNS_ACCOUNT" --> A
@@ -116,14 +117,23 @@ graph LR
     T -- "FROM_DEVICE" --> D
     T -- "FROM_IP" --> IP
 
-    classDef user fill:#2563eb,stroke:#1e3a8a,stroke-width:2px,color:#fff;
-    classDef finance fill:#10b981,stroke:#065f46,stroke-width:2px,color:#fff;
-    classDef event fill:#f59e0b,stroke:#9a3412,stroke-width:2px,color:#fff;
-    classDef target fill:#8b5cf6,stroke:#5b21b6,stroke-width:2px,color:#fff;
-    classDef tech fill:#64748b,stroke:#334155,stroke-width:2px,color:#fff;
-```
+    %% Subgraph styling (Pure white background, clean borders)
+    style Identity fill:#ffffff,stroke:#94a3b8,stroke-width:2px,color:#000
+    style Activity fill:#ffffff,stroke:#94a3b8,stroke-width:2px,color:#000
+    style Metadata fill:#ffffff,stroke:#94a3b8,stroke-width:2px,color:#000
+
+    %% Distinct colors for EVERY single entity
+    classDef userNode fill:#3b82f6,stroke:#1d4ed8,stroke-width:3px,color:#fff;        %% Bright Blue
+    classDef accountNode fill:#10b981,stroke:#047857,stroke-width:3px,color:#fff;     %% Emerald Green
+    classDef cardNode fill:#8b5cf6,stroke:#6d28d9,stroke-width:3px,color:#fff;        %% Vibrant Purple
+    classDef transactionNode fill:#f59e0b,stroke:#b45309,stroke-width:3px,color:#fff; %% Amber/Orange
+    classDef merchantNode fill:#ef4444,stroke:#b91c1c,stroke-width:3px,color:#fff;    %% Red
+    classDef deviceNode fill:#0ea5e9,stroke:#0369a1,stroke-width:3px,color:#fff;      %% Sky Blue
+    classDef ipNode fill:#ec4899,stroke:#be185d,stroke-width:3px,color:#fff;          %% Pink
 
 ---
+---
+
 
 ## Fraud Detection
 
