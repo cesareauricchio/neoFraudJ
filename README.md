@@ -130,10 +130,9 @@ graph LR
     classDef merchantNode fill:#ef4444,stroke:#b91c1c,stroke-width:3px,color:#fff;    %% Red
     classDef deviceNode fill:#0ea5e9,stroke:#0369a1,stroke-width:3px,color:#fff;      %% Sky Blue
     classDef ipNode fill:#ec4899,stroke:#be185d,stroke-width:3px,color:#fff;          %% Pink
+```
 
 ---
----
-
 
 ## Fraud Detection
 
